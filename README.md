@@ -14,7 +14,7 @@ cargo run --bin import <file_path> <locale>
 
 ## Game rules
 The player has to correctly guess a randomly selected word from the word base. All words are 5 characters long. By coloring single letters the game tells the player about correct letter positioning.
-* green: The the guessed letter is at the correct position.
+* green: The guessed letter is at the correct position.
 * orange: The word contains the letter, but at a different position.
 
 The game ends when the player runs out of guesses or when the player guesses the word correctly. After that, a message is displayed. 
@@ -33,7 +33,7 @@ If `WORDBASE_FILE` in the `.env` file is set, the tool will merge the data to av
 
 If `DATABASE_URL` is set, you need to manually clean up the database beforehand.
 
-However, the requirements for the file in the `<file_path` argument are as follows:
+However, the requirements for the file underneath the `<file_path` argument are as follows:
 * The file needs to be encoded in UTF-8
 * The words need to be alphabetically sorted
 * The words need to be separated with a newline character as the file is read line-wise
