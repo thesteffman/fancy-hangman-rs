@@ -20,17 +20,6 @@ pub mod read {
         ///
         /// # Arguments
         /// * `buffer` - A mutable String that can be reused
-        ///
-        /// # Examples
-        /// ```no_run
-        /// let mut buffer = String::new();
-        ///
-        /// while let Some(line) = reader.read_line(&mut buffer) {
-        ///     let result: std::io::Result<&mut String> = line;
-        ///     // ...
-        /// }
-        /// ```
-        ///
         pub fn read_line<'buf>(
             &mut self,
             buffer: &'buf mut String,
