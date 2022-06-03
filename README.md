@@ -1,2 +1,2 @@
 # fancy-hangman-rs
-CLI based wordle inspired word guessing game
+fancy-hangman-rs is a wordle inspired word guessing game for the CLI written in rust.
