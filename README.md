@@ -27,7 +27,18 @@ The `.env` file contains various settings to adjust the game's behavior.
 * `WORDBASE_FILE` indicates that the word base is located in a given text file
 
 ## Import
+The import tool can be used to expand the word base. You have two options here with different implications.
 
+If `WORDBASE_FILE` in the `.env` file is set, the tool will merge the data to avoid duplicates.
+
+If `DATABASE_URL` is set, you need to manually clean up the database beforehand.
+
+However, the requirements for the file in the `<file_path` argument are as follows:
+* The file needs to be encoded in UTF-8
+* The words need to be alphabetically sorted
+* The words need to be separated with a newline character as the file is read line-wise
+
+The tool automatically removes duplicates and entries with a size different from 5 bytes and converts unicode characters to ASCII using [any_ascii]. German umlauts receive a special treatment.
 
 ## Database
 If you choose to set up a database to serve as word base, please take a closer look at the [diesel.rs] documentation. You need a working diesel_cli installation to proceed.
@@ -52,3 +63,4 @@ Et voilà! Enjoy additional features. A correctly guessed word will be marked as
 
 [diesel.rs]: http://diesel.rs/guides/getting-started 
 [docker]: https://www.docker.com/
+[any_ascii]: https://github.com/anyascii/anyascii
