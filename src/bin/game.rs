@@ -15,7 +15,7 @@ fn main() -> std::io::Result<()> {
 
     print_welcome();
 
-    println!("Welcome to fancy hangman CLI! Guess today's word {}!", solution);
+    println!("Welcome to fancy hangman CLI! Guess today's word!");
 
     solution.chars().into_iter().for_each(| _ | print!("{} ", "_"));
     println!();
