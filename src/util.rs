@@ -23,6 +23,8 @@ pub mod read {
         ///
         /// # Examples
         /// ```
+        /// let file = File::open("foo.txt")?;
+        /// let reader = BufReader::new(file);
         /// let mut buffer = String::new();
         ///
         /// while let Some(line) = reader.read_line(&mut buffer) {
