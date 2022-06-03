@@ -2,7 +2,6 @@ use std::io::stdin;
 
 use colored::*;
 
-use fhcli::models::Word;
 use fhcli::util::env::{get_word_base, get_app_language, get_max_guesses};
 use fhcli::util::lang::replace_unicode;
 
@@ -10,51 +9,56 @@ fn main() -> std::io::Result<()> {
     let max_guesses: i32 = get_max_guesses();
 
     let word_base = get_word_base().unwrap();
-    let solution_entry: Word = word_base.get_random_word().unwrap();
-    let solution: &str = &solution_entry.word.to_lowercase();
 
-    print_welcome();
+    match word_base.get_random_word() {
+        None => println!("¯\\_({})_/¯ Seems like I ran out of words! Have you tried using the import tool?", "\u{30c4}"),
+        Some(solution_entry) => {
+            let solution: &str = &solution_entry.word.to_lowercase();
 
-    println!("Welcome to fancy hangman CLI! Guess today's word!");
+            print_welcome();
 
-    solution.chars().into_iter().for_each(| _ | print!("{} ", "_"));
-    println!();
+            println!("Welcome to fancy hangman CLI! Guess today's word!");
 
-    println!("You have {} guesses.", max_guesses);
+            solution.chars().into_iter().for_each(| _ | print!("{} ", "_"));
+            println!();
 
-    let mut full_match: bool = false;
+            println!("You have {} guesses.", max_guesses);
 
-    let mut counter = 0;
-    while counter < max_guesses {
-        let input: String = read_input(solution.len());
-        let guess: String = input.to_lowercase();
+            let mut full_match: bool = false;
 
-        match word_base.find_word(&guess) {
-            Some(_) => {
-                let guesses: i32 = max_guesses - counter - 1;
-                full_match = check_word(&solution, &guess);
+            let mut counter = 0;
+            while counter < max_guesses {
+                let input: String = read_input(solution.len());
+                let guess: String = input.to_lowercase();
 
-                if full_match == true {
-                    break;
-                } else {
-                    if guesses > 1 {
-                        println!("You now have {} guesses.", guesses);
-                    } else {
-                        println!("This is your last guess.");
-                    }
+                match word_base.find_word(&guess) {
+                    Some(_) => {
+                        let guesses: i32 = max_guesses - counter - 1;
+                        full_match = check_word(&solution, &guess);
+
+                        if full_match == true {
+                            break;
+                        } else {
+                            if guesses > 1 {
+                                println!("You now have {} guesses.", guesses);
+                            } else {
+                                println!("This is your last guess.");
+                            }
+                        }
+
+                        if guesses == 0 { println!("Better luck next time!") }
+
+                        counter += 1;
+                    },
+                    None => println!("The guessed word is not in the word list.")
                 }
+            }
 
-                if guesses == 0 { println!("Better luck next time!") }
-
-                counter += 1;
-            },
-            None => println!("The guessed word is not in the word list.")
+            if full_match == true {
+                println!("Congratulations! You won!");
+                word_base.update_word(solution_entry);
+            }
         }
-    }
-
-    if full_match == true {
-        println!("Congratulations! You won!");
-        word_base.update_word(solution_entry);
     }
 
     Ok(())
