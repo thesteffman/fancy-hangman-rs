@@ -2,6 +2,7 @@ use std::env;
 use std::env::temp_dir;
 use std::fs::File;
 use std::io::{Error, LineWriter, Write};
+use indicatif::{ProgressBar, ProgressStyle};
 use uuid::Uuid;
 
 use fhcli::util::env::{get_word_base, parse_app_language};
@@ -53,30 +54,33 @@ fn polish(source_path: &str, app_language: AppLanguage) -> Result<String, Error>
 
     match out_file {
         Ok(out_file) => {
+            let progress_bar = setup_spinner();
+
             let mut reader = get_reusable_buffered_reader(source_path)?;
             let mut buffer = String::new();
             let mut writer: LineWriter<File> = LineWriter::new(out_file);
 
-            println!("processing file {}", source_path);
+            progress_bar.set_message(format!("processing file {}", source_path));
 
             // compare word with previous valid selection to avoid duplicates
             let mut previous_word: String = String::with_capacity(5);
+            let mut counter: u64 = 0;
 
             while let Some(line) = reader.read_line(&mut buffer) {
                 let word: String = line?.trim().to_lowercase();
 
                 if word.len() == 5 && !previous_word.eq(&word) {
-                    print!(".");
-
                     let polished: String = replace_unicode(&word, app_language) + "\n";
 
                     writer.write(polished.as_ref())?;
 
                     previous_word = word;
+
+                    counter += 1;
                 }
             }
 
-            println!("finished polishing");
+            progress_bar.set_message(format!("Finished. Polished {} words", counter));
 
             Ok(tmp_file_name)
         }
@@ -89,7 +93,9 @@ fn polish(source_path: &str, app_language: AppLanguage) -> Result<String, Error>
 /// # Arguments
 ///
 /// * `tmp_file_name` - A String that holds the name of the temp file created
-fn import(tmp_file_name: String) -> Result<i32, Error> {
+fn import(tmp_file_name: String) -> Result<u64, Error> {
+    let progress_bar = setup_spinner();
+
     let mut tmp_dir = temp_dir();
     tmp_dir.push(tmp_file_name);
 
@@ -97,19 +103,28 @@ fn import(tmp_file_name: String) -> Result<i32, Error> {
     let mut reader = get_reusable_buffered_reader(tmp_dir)?;
     let mut buffer = String::new();
 
-    println!("Importing...");
+    progress_bar.set_message("Importing...");
 
-    let mut counter = 0;
+    let mut counter: u64 = 0;
     while let Some(line) = reader.read_line(&mut buffer) {
         let w_str: &str = line.unwrap().trim();
 
         word_base.create_word(w_str);
 
-        // println!("Added word {}", w.word);
-        print!(".");
-
         counter += 1;
     }
 
+    progress_bar.set_message(format!("Finished. Imported {} words", counter));
+
     Ok(counter)
+}
+
+fn setup_spinner() -> ProgressBar {
+    let progress_bar = ProgressBar::new_spinner();
+    progress_bar.enable_steady_tick(120);
+    progress_bar.set_style(ProgressStyle::default_bar()
+        .template("{spinner:.green} {elapsed_precise} {msg}")
+        .progress_chars("#>-"));
+
+    progress_bar
 }
