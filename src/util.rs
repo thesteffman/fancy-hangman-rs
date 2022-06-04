@@ -260,13 +260,12 @@ pub mod io {
 
                     match file_result {
                         Ok(mut file) => {
-                            file.write(format!("{}\n", text).as_ref());
+                            file.write(format!("{}\n", text).as_ref()).unwrap();
                         }
                         Err(e) => println!("Error when writing '{}' to the wordbase:\n{}", text, e)
                     };
-
                 }
-            };
+            }
         }
 
         /// Not implemented for text wordbase
