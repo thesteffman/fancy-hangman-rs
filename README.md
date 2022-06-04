@@ -1,4 +1,12 @@
 # fancy-hangman-rs
+[![.github/workflows/build.yml][build-badge]][build-url]
+[![.github/workflows/test.yml][test-badge]][test-url]
+
+[build-badge]: https://github.com/thesteffman/fancy-hangman-rs/actions/workflows/build.yml/badge.svg
+[build-url]: https://github.com/thesteffman/fancy-hangman-rs/actions/workflows/build.yml
+[test-badge]: https://github.com/thesteffman/fancy-hangman-rs/actions/workflows/test.yml/badge.svg
+[test-url]: https://github.com/thesteffman/fancy-hangman-rs/actions/workflows/test.yml
+
 fancy-hangman-rs is a wordle inspired word guessing game for the CLI written in rust.
 
 ## Usage
