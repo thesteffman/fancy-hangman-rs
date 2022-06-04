@@ -12,3 +12,6 @@ Cargo.lock
 # IntelliJ files
 *.iml
 .idea/
+
+# Diesel migrations
+migrations/
