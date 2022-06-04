@@ -252,7 +252,7 @@ pub mod io {
         /// Append a [Word] to the wordbase
         fn create_word(&self, text: &str) {
             match self.find_word(text) {
-                Some(_) => println!("'{}' already exists in the wordbase.", text),
+                Some(_) => {},
                 None => {
                     let file_result =  OpenOptions::new()
                         .append(true)
@@ -260,9 +260,7 @@ pub mod io {
 
                     match file_result {
                         Ok(mut file) => {
-                            file.write(text.as_ref()).unwrap();
-
-                            println!("Added '{}' to the wordbase!", text)
+                            file.write(format!("{}\n", text).as_ref());
                         }
                         Err(e) => println!("Error when writing '{}' to the wordbase:\n{}", text, e)
                     };
