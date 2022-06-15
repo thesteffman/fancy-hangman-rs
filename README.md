@@ -18,7 +18,7 @@ cargo run --bin game [language]
 If `language` is not set, it defaults to the locale system settings or `"en"`.
 
 
-Run the importer tool by executing
+Run the import tool by executing
 `
 cargo run --bin import <file_path> [language]
 `.
@@ -37,11 +37,7 @@ The `.env` file contains information about the database location.
 * `DATABASE_URL` indicates that the dictioanry is located in a given db url
 
 ## Import
-The import tool can be used to expand the word base. You have two options here with different implications.
-
-If `WORDBASE_FILE` in the `.env` file is set, the tool will merge the data to avoid duplicates.
-
-If `DATABASE_URL` is set, you need to manually clean up the database beforehand.
+The import tool can be used to expand the word base. Usage: See Usage above.
 
 However, the requirements for the file underneath the `<file_path>` argument are as follows:
 * The file needs to be encoded in UTF-8
