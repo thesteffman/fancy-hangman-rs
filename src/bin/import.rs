@@ -7,6 +7,7 @@ use clap::Parser;
 use console::{Emoji, style};
 use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
 use uuid::Uuid;
+use fancy_hangman::db::db_dictionary::DbDictionary;
 
 use fancy_hangman::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
 use fancy_hangman::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
@@ -30,10 +31,7 @@ fn main() -> std::io::Result<()> {
         Some(flag) => parse_app_language(flag.as_str())
     };
 
-    let dictionary: Box<dyn Dictionary> = match args.dictionary {
-        None => get_dictionary(app_language, String::from("text")),
-        Some(flag) => get_dictionary(app_language, flag)
-    };
+    let dictionary = get_dictionary(app_language);
 
     let started = Instant::now();
 
@@ -111,7 +109,7 @@ fn polish(source_path: &str, app_language: AppLanguage) -> Result<(String, u64),
 /// # Arguments
 ///
 /// * `tmp_file_name` - A String that holds the name of the temp file created
-fn import(tmp_file_name: String, dictionary: Box<dyn Dictionary>, progress_bar: &ProgressBar) -> Result<i32, Error> {
+fn import(tmp_file_name: String, dictionary: DbDictionary, progress_bar: &ProgressBar) -> Result<i32, Error> {
     let buf_reader = BufReader::new(File::open(tmp_file_name).unwrap());
 
     let mut counter = 0;
