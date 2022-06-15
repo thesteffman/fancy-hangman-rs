@@ -10,6 +10,8 @@ repository = "https://github.com/tohuwabohu-io/wordle-rs"
 readme = "README.md"
 default-run = "game"
 keywords = ["wordle", "game", "cli", "cli-game"]
+exclude = [".gitignore", ".github/"]
+
 
 [[bin]]
 name = "game"
