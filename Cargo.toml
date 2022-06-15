@@ -1,11 +1,17 @@
 [package]
 name = "wordle-rs"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
-default-run = "wordle-rs"
+license-file = "LICENSE"
+description = "The popular word guessing game as CLI application! Written in Rust."
+homepage = "https://www.tohuwabohu.io/projects/wordle-rs"
+documentation = "https://www.tohuwabohu.io/projects/wordle-rs"
+repository = "https://github.com/tohuwabohu-io/wordle-rs"
+readme = "README.md"
+default-run = "game"
 
 [[bin]]
-name = "wordle-rs"
+name = "game"
 path = "src/main.rs"
 
 
