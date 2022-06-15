@@ -43,12 +43,11 @@ If `WORDBASE_FILE` in the `.env` file is set, the tool will merge the data to av
 
 If `DATABASE_URL` is set, you need to manually clean up the database beforehand.
 
-However, the requirements for the file underneath the `<file_path` argument are as follows:
+However, the requirements for the file underneath the `<file_path>` argument are as follows:
 * The file needs to be encoded in UTF-8
-* The words need to be alphabetically sorted
 * The words need to be separated with a newline character as the file is read line-wise
 
-The tool automatically removes duplicates and entries with a size different from 5 bytes and converts unicode characters to ASCII using [any_ascii]. German umlauts receive a special treatment.
+The tool automatically removes duplicates and entries with a size different from 5 characters and converts unicode characters to ASCII using [any_ascii]. German umlauts receive a special treatment.
 
 ## Database
 If you choose to set up a database to serve as dictionary, please take a closer look at the [diesel.rs] documentation. You need a working diesel_cli installation to proceed.
