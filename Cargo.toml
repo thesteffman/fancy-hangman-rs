@@ -1,12 +1,12 @@
 [package]
-name = "wordle-rs"
+name = "wordle-cli"
 version = "1.0.0"
 edition = "2021"
 license-file = "LICENSE"
 description = "The popular word guessing game as CLI application! Written in Rust."
-homepage = "https://www.tohuwabohu.io/projects/wordle-rs"
-documentation = "https://www.tohuwabohu.io/projects/wordle-rs"
-repository = "https://github.com/tohuwabohu-io/wordle-rs"
+homepage = "https://www.tohuwabohu.io/projects/wordle-cli"
+documentation = "https://www.tohuwabohu.io/projects/wordle-cli"
+repository = "https://github.com/tohuwabohu-io/wordle-cli"
 readme = "README.md"
 default-run = "game"
 keywords = ["wordle", "game", "cli", "cli-game"]

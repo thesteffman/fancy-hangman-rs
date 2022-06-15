@@ -1,8 +1,8 @@
 use std::io::stdin;
 use clap::Parser;
 use console::style;
-use wordle_rs::lang::locale::{get_app_language, parse_app_language, replace_unicode};
-use wordle_rs::dictionary::{Dictionary, get_dictionary};
+use wordle_cli::lang::locale::{get_app_language, parse_app_language, replace_unicode};
+use wordle_cli::dictionary::{Dictionary, get_dictionary};
 
 /// Play wordle, a word guessing game!
 #[derive(Parser)]
@@ -140,7 +140,7 @@ _ _ _ _ _
 }
 
 #[cfg(test)]
-use wordle_rs::lang::locale::AppLanguage;
+use wordle_cli::lang::locale::AppLanguage;
 
 #[cfg(test)]
 #[test]

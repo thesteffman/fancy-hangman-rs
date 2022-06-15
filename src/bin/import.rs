@@ -8,9 +8,9 @@ use console::{Emoji, style};
 use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
 use uuid::Uuid;
 
-use wordle_rs::db::db_dictionary::DbDictionary;
-use wordle_rs::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
-use wordle_rs::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
+use wordle_cli::db::db_dictionary::DbDictionary;
+use wordle_cli::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
+use wordle_cli::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
 
 static BOOKMARK: Emoji<'_, '_> = Emoji("🔖  ", "");
 static MINIDISC: Emoji<'_, '_> = Emoji("💽  ", "");
