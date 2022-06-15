@@ -9,6 +9,7 @@ documentation = "https://www.tohuwabohu.io/projects/wordle-rs"
 repository = "https://github.com/tohuwabohu-io/wordle-rs"
 readme = "README.md"
 default-run = "game"
+keywords = ["wordle", "game", "cli", "cli-game"]
 
 [[bin]]
 name = "game"
