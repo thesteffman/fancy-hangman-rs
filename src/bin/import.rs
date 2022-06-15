@@ -1,41 +1,74 @@
-use std::env;
 use std::env::temp_dir;
 use std::fs::File;
-use std::io::{Error, LineWriter, Write};
-use indicatif::{ProgressBar, ProgressStyle};
+use std::io::{BufRead, BufReader, Error, LineWriter, Write};
+use std::time::Instant;
+
+use clap::Parser;
+use console::{Emoji, style};
+use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
 use uuid::Uuid;
 
-use fhcli::util::env::{get_word_base, parse_app_language};
-use fhcli::util::read::{get_reusable_buffered_reader};
-use fhcli::util::lang::{AppLanguage, replace_unicode};
+use fancy_hangman::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
+use fancy_hangman::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
 
+static BOOKMARK: Emoji<'_, '_> = Emoji("🔖  ", "");
+static MINIDISC: Emoji<'_, '_> = Emoji("💽  ", "");
+static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", ":-)");
+
+/// A maintenance tool for wordle
+#[derive(Parser)]
+struct Arguments {
+    source_file: String,
+    language: Option<String>,
+    dictionary: Option<String>
+}
 fn main() -> std::io::Result<()> {
-    let args: Vec<String> = env::args().collect();
+    let args = Arguments::parse();
 
-    if args.len() == 1 {
-        println!("Usage:\n1st argument: Source file path\n2nd argument: Locale (default: en)");
-    } else {
-        let source_path = &args[1];
-        let locale = &args[2];
+    let app_language = match args.language {
+        None => get_app_language(),
+        Some(flag) => parse_app_language(flag.as_str())
+    };
 
-        let app_language = parse_app_language(locale);
+    let dictionary: Box<dyn Dictionary> = match args.dictionary {
+        None => get_dictionary(app_language, String::from("text")),
+        Some(flag) => get_dictionary(app_language, flag)
+    };
 
-        match polish(source_path, app_language) {
-            Ok(tmp_file_name) =>
-                match import(tmp_file_name) {
-                    Ok(counter) => println!("Added {} words to database. Have fun!", counter),
-                    Err(error) => println!("An error occurred while importing. Import aborted\n{}", error)
-                }
-            Err(error) => println!("An error occurred while polishing. Import aborted\n{}", error)
-        };
-    }
+    let started = Instant::now();
+
+    println!(
+        "{} {}Polishing file...",
+        style("[1/2]").bold().dim(),
+        BOOKMARK
+    );
+
+    println!(
+        "{} {}Importing file...",
+        style("[2/2]").bold().dim(),
+        MINIDISC
+    );
+
+    let progress_polish = setup_spinner();
+    progress_polish.set_message(format!("Processing {}...", &args.source_file));
+
+    let meta_data = polish(&args.source_file, app_language)?;
+
+    progress_polish.finish_with_message(format!("Finished processing {}. Importing...", &args.source_file));
+
+    let progress_import = ProgressBar::new(meta_data.1);
+
+    let counter = import(meta_data.0, dictionary, &progress_import)?;
+
+    progress_polish.finish_and_clear();
+    progress_import.finish_and_clear();
+
+    println!("{} Done in {}. Added {} words to the dictionary!", SPARKLE, HumanDuration(started.elapsed()), counter);
 
     Ok(())
 }
 
 /// Read raw word list from source_path and polish with matching app_language strategy.
-/// The word list needs to be an alphabetically sorted plain utf-8 encoded text file with newlines after each word.
-/// Words of more than 5 bytes of size get discarded and duplicates get sorted out.
 /// The polished list is then written to a temporary file located in the tmp directory of the filesystem.
 ///
 /// See [temp_dir] documentation for more information.
@@ -44,77 +77,59 @@ fn main() -> std::io::Result<()> {
 ///
 /// * `src_path` - A string slice that holds the path of the file you want to import on the filesystem
 /// * `app_language` - The language of the imported words. See [AppLanguage]
-fn polish(source_path: &str, app_language: AppLanguage) -> Result<String, Error> {
-    let mut tmp_dir = temp_dir();
-    let tmp_file_name = format!("{}.txt", Uuid::new_v4());
-
-    tmp_dir.push(&tmp_file_name);
-
-    let out_file: Result<File, Error> = File::create(tmp_dir);
+fn polish(source_path: &str, app_language: AppLanguage) -> Result<(String, u64), Error> {
+    let tmp_file_name = format!("{}/{}.txt", temp_dir().to_str().unwrap(), Uuid::new_v4());
+    let out_file: Result<File, Error> = File::create(&tmp_file_name);
 
     match out_file {
         Ok(out_file) => {
-            let progress_bar = setup_spinner();
-
-            let mut reader = get_reusable_buffered_reader(source_path)?;
-            let mut buffer = String::new();
+            let buf_reader = BufReader::new(File::open(source_path).unwrap());
             let mut writer: LineWriter<File> = LineWriter::new(out_file);
 
-            progress_bar.set_message(format!("processing file {}", source_path));
+            let mut counter = 0;
 
-            // compare word with previous valid selection to avoid duplicates
-            let mut previous_word: String = String::with_capacity(5);
-            let mut counter: u64 = 0;
+            for line_result in buf_reader.lines() {
+                let polished = replace_unicode(line_result.unwrap().to_lowercase().as_str(), app_language);
 
-            while let Some(line) = reader.read_line(&mut buffer) {
-                let word: String = line?.trim().to_lowercase();
-
-                if word.len() == 5 && !previous_word.eq(&word) {
-                    let polished: String = replace_unicode(&word, app_language) + "\n";
-
+                if polished.len() == 5 {
                     writer.write(polished.as_ref())?;
-
-                    previous_word = word;
+                    writer.write(b"\n")?;
 
                     counter += 1;
                 }
             }
 
-            progress_bar.set_message(format!("Finished. Polished {} words", counter));
-
-            Ok(tmp_file_name)
+            Ok((tmp_file_name, counter))
         }
         Err(error) => Err(error)
     }
 }
 
-/// Import temporary file created by [polish] into the word base.
+/// Import temporary file created by [polish] into the dictionary.
+/// Avoid duplicates when inserting a [WordEntry] into the dictionary.
 ///
 /// # Arguments
 ///
 /// * `tmp_file_name` - A String that holds the name of the temp file created
-fn import(tmp_file_name: String) -> Result<u64, Error> {
-    let progress_bar = setup_spinner();
+fn import(tmp_file_name: String, dictionary: Box<dyn Dictionary>, progress_bar: &ProgressBar) -> Result<i32, Error> {
+    let buf_reader = BufReader::new(File::open(tmp_file_name).unwrap());
 
-    let mut tmp_dir = temp_dir();
-    tmp_dir.push(tmp_file_name);
+    let mut counter = 0;
+    for line_result in buf_reader.lines() {
+        let line = line_result.unwrap();
 
-    let word_base = get_word_base().unwrap();
-    let mut reader = get_reusable_buffered_reader(tmp_dir)?;
-    let mut buffer = String::new();
+        match dictionary.create_word(DictionaryEntry {
+            word: line.to_lowercase(),
+            guessed: false
+        }) {
+            None => {},
+            Some(_) => {
+                counter += 1;
+            }
+        }
 
-    progress_bar.set_message("Importing...");
-
-    let mut counter: u64 = 0;
-    while let Some(line) = reader.read_line(&mut buffer) {
-        let w_str: &str = line.unwrap().trim();
-
-        word_base.create_word(w_str);
-
-        counter += 1;
+        progress_bar.inc(1);
     }
-
-    progress_bar.set_message(format!("Finished. Imported {} words", counter));
 
     Ok(counter)
 }
@@ -123,8 +138,7 @@ fn setup_spinner() -> ProgressBar {
     let progress_bar = ProgressBar::new_spinner();
     progress_bar.enable_steady_tick(120);
     progress_bar.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} {elapsed_precise} {msg}")
-        .progress_chars("#>-"));
+        .template("{prefix:.bold.dim} {spinner:.green} {msg}"));
 
     progress_bar
 }
