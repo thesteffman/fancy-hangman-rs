@@ -8,7 +8,6 @@ use fancy_hangman::dictionary::{Dictionary, get_dictionary};
 #[derive(Parser)]
 struct Arguments {
     language: Option<String>,
-    dictionary: Option<String>
 }
 fn main() {
     print_welcome();
@@ -20,11 +19,7 @@ fn main() {
         Some(flag) => parse_app_language(flag.as_str())
     };
 
-    let dictionary: Box<dyn Dictionary> = match args.dictionary {
-        None => get_dictionary(app_language, String::from("text")),
-        Some(flag) => get_dictionary(app_language, flag)
-    };
-
+    let dictionary = get_dictionary(app_language);
     let solution_option = dictionary.get_random_word();
 
     match solution_option {

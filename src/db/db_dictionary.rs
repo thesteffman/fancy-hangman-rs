@@ -22,6 +22,7 @@ impl DbDictionary {
         }
     }
 
+    /// Issue an update statement on a specific dictionary entry.
     fn update_entry(&self, entry: &DbDictionaryEntry) {
         match diesel::update(dictionary::dsl::dictionary
             .filter(dictionary::id.eq(entry.id)))
@@ -32,6 +33,7 @@ impl DbDictionary {
         }
     }
 
+    /// Returns either an entry with matching [used_at] or randomly selects a unused entry.
     fn get_word_of_today(&self, current_day: NaiveDate) -> Result<Option<DbDictionaryEntry>, Error> {
         match dictionary::dsl::dictionary
             .filter(dictionary::used_at.eq(current_day))
@@ -82,6 +84,7 @@ impl Dictionary for DbDictionary {
         }
     }
 
+    /// Find dictionary entry with matching [text]. Language is implicitly set in DbDictionary.
     fn find_word(&self, text: &str) -> Option<DictionaryEntry> {
         let db_result = dictionary::dsl::dictionary
             .filter(dictionary::word.eq(text))
@@ -105,6 +108,7 @@ impl Dictionary for DbDictionary {
         }
     }
 
+    /// Add new dictionary entry
     fn create_word(&self, word_entry: DictionaryEntry) -> Option<DictionaryEntry> {
         match self.find_word(&word_entry.word) {
             None => {
@@ -131,6 +135,7 @@ impl Dictionary for DbDictionary {
         }
     }
 
+    /// Mark word as guessed in the database when the player won
     fn guessed_word(&self, word_entry: DictionaryEntry) {
         match diesel::update(dictionary::dsl::dictionary
             .filter(dictionary::word.eq(word_entry.word)))

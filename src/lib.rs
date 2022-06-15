@@ -1,5 +1,4 @@
 pub mod dictionary;
-pub mod text;
 pub mod lang;
 pub mod db;
 

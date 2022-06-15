@@ -1,6 +1,5 @@
 use crate::db::db_dictionary::DbDictionary;
 use crate::lang::locale::AppLanguage;
-use crate::text::text_dictionary::TextDictionary;
 
 use std::env;
 use dotenv::dotenv;
@@ -14,20 +13,13 @@ pub trait Dictionary {
 }
 
 /// Represents a dictionary entry
-pub struct  DictionaryEntry {
+pub struct DictionaryEntry {
     pub word: String,
     pub guessed: bool
 }
 
-pub fn get_dictionary(app_language: AppLanguage, dictionary_flag: String) -> Box<dyn Dictionary> {
-    match dictionary_flag.as_str() {
-        "db" =>  {
-            dotenv().ok();
-            Box::new(DbDictionary::new(
-                env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
-                app_language
-            ))
-        },
-        _ => Box::new(TextDictionary::new(format!("res/dictionary_{}.txt", app_language.to_string().to_lowercase()))),
-    }
+pub fn get_dictionary(app_language: AppLanguage) -> DbDictionary {
+    dotenv().ok();
+    DbDictionary::new(env::var("DATABASE_URL")
+                          .expect("DATABASE_URL must be set"), app_language)
 }
