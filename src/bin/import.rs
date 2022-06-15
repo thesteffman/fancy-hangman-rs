@@ -7,10 +7,10 @@ use clap::Parser;
 use console::{Emoji, style};
 use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
 use uuid::Uuid;
-use fancy_hangman::db::db_dictionary::DbDictionary;
 
-use fancy_hangman::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
-use fancy_hangman::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
+use wordle_rs::db::db_dictionary::DbDictionary;
+use wordle_rs::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
+use wordle_rs::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
 
 static BOOKMARK: Emoji<'_, '_> = Emoji("🔖  ", "");
 static MINIDISC: Emoji<'_, '_> = Emoji("💽  ", "");

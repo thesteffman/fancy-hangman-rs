@@ -1,5 +1,5 @@
 [package]
-name = "worlde-rs"
+name = "wordle-rs"
 version = "0.1.0"
 edition = "2021"
 default-run = "wordle-rs"

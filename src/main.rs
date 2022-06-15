@@ -1,8 +1,8 @@
 use std::io::stdin;
 use clap::Parser;
 use console::style;
-use fancy_hangman::lang::locale::{get_app_language, parse_app_language, replace_unicode};
-use fancy_hangman::dictionary::{Dictionary, get_dictionary};
+use wordle_rs::lang::locale::{get_app_language, parse_app_language, replace_unicode};
+use wordle_rs::dictionary::{Dictionary, get_dictionary};
 
 /// Play wordle, a word guessing game!
 #[derive(Parser)]
@@ -140,7 +140,7 @@ _ _ _ _ _
 }
 
 #[cfg(test)]
-use fancy_hangman::lang::locale::AppLanguage;
+use wordle_rs::lang::locale::AppLanguage;
 
 #[cfg(test)]
 #[test]
