@@ -19,7 +19,6 @@ path = "src/main.rs"
 
 [dependencies]
 any_ascii = "0.3.1"
-sys-locale = "0.2.0"
 uuid = { version = "1.1.1", features = ["v4", "fast-rng"] }
 clap = { version = "3.1.18", features = ["derive"] }
 dotenv = "0.15.0"
