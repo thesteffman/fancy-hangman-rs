@@ -183,7 +183,7 @@ _ _ _ _ _
 #[test]
 fn test_validate_user_input() {
     assert!(validate_user_input(
-        replace_unicode("schön", "en").as_str(), 6
+        replace_unicode("schön", "de").as_str(), 6
     ));
 
     assert!(validate_user_input(
