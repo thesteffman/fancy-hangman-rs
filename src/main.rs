@@ -178,9 +178,6 @@ _ _ _ _ _
 }
 
 #[cfg(test)]
-use wordle_cli::lang::locale::AppLanguage;
-
-#[cfg(test)]
 #[test]
 fn test_validate_user_input() {
     assert!(validate_user_input(
