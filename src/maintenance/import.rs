@@ -3,34 +3,19 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Error, LineWriter, Write};
 use std::time::Instant;
 
-use clap::Parser;
 use console::{Emoji, style};
 use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
 use uuid::Uuid;
 
-use wordle_cli::db::db_dictionary::DbDictionary;
-use wordle_cli::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
-use wordle_cli::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
+use crate::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
+use crate::db::db_dictionary::DbDictionary;
+use crate::lang::locale::{AppLanguage, replace_unicode};
 
 static BOOKMARK: Emoji<'_, '_> = Emoji("🔖  ", "");
 static MINIDISC: Emoji<'_, '_> = Emoji("💽  ", "");
 static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", ":-)");
 
-/// A maintenance tool for wordle
-#[derive(Parser)]
-struct Arguments {
-    source_file: String,
-    language: Option<String>,
-    dictionary: Option<String>
-}
-fn main() -> std::io::Result<()> {
-    let args = Arguments::parse();
-
-    let app_language = match args.language {
-        None => get_app_language(),
-        Some(flag) => parse_app_language(flag.as_str())
-    };
-
+pub fn do_import(source_file: String, app_language: AppLanguage) -> std::io::Result<()> {
     let dictionary = get_dictionary(app_language);
 
     let started = Instant::now();
@@ -48,11 +33,11 @@ fn main() -> std::io::Result<()> {
     );
 
     let progress_polish = setup_spinner();
-    progress_polish.set_message(format!("Processing {}...", &args.source_file));
+    progress_polish.set_message(format!("Processing {}...", source_file));
 
-    let meta_data = polish(&args.source_file, app_language)?;
+    let meta_data = polish(&source_file, app_language)?;
 
-    progress_polish.finish_with_message(format!("Finished processing {}. Importing...", &args.source_file));
+    progress_polish.finish_with_message(format!("Finished processing {}. Importing...", source_file));
 
     let progress_import = ProgressBar::new(meta_data.1);
 
@@ -73,7 +58,7 @@ fn main() -> std::io::Result<()> {
 ///
 /// # Arguments
 ///
-/// * `src_path` - A string slice that holds the path of the file you want to import on the filesystem
+/// * `src_path` - A string slice that holds the path of the file you want to maintenance on the filesystem
 /// * `app_language` - The language of the imported words. See [AppLanguage]
 fn polish(source_path: &str, app_language: AppLanguage) -> Result<(String, u64), Error> {
     let tmp_file_name = format!("{}/{}.txt", temp_dir().to_str().unwrap(), Uuid::new_v4());

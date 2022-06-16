@@ -1,23 +1,61 @@
 use std::io::stdin;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use console::style;
-use wordle_cli::lang::locale::{get_app_language, parse_app_language, replace_unicode};
+
+use wordle_cli::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
 use wordle_cli::dictionary::{Dictionary, get_dictionary};
+use wordle_cli::maintenance::import::do_import;
 
 /// Play wordle, a word guessing game!
 #[derive(Parser)]
 struct Arguments {
+    /// Language of the dictionary that will be loaded. Supported: EN, DE. Defaults to EN.
+    #[clap(short, long)]
     language: Option<String>,
-}
-fn main() {
-    print_welcome();
 
+    #[clap(subcommand)]
+    command: Option<Commands>
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Extend the dictionary
+    Import {
+        #[clap(short, long)]
+        /// File to import. Requires entries to be separated by newlines.
+        source_file: String,
+        /// Language of the dictionary to import.
+        #[clap(short, long)]
+        import_language: String
+    }
+}
+
+fn main() -> std::io::Result<()> {
     let args = Arguments::parse();
 
     let app_language = match args.language {
         None => get_app_language(),
         Some(flag) => parse_app_language(flag.as_str())
     };
+
+    match args.command {
+        Some(command) => {
+            match command {
+                Commands::Import { source_file, import_language } => {
+                    do_import(source_file, parse_app_language(&import_language))?;
+                }
+            }
+        }
+        _ => {
+            start_game(app_language);
+        }
+    }
+
+    Ok(())
+}
+
+fn start_game(app_language: AppLanguage) {
+    print_welcome();
 
     let dictionary = get_dictionary(app_language);
     let solution_option = dictionary.get_random_word();
