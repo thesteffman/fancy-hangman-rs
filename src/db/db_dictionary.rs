@@ -6,19 +6,18 @@ use diesel::result::Error;
 use crate::db::model::{DbDictionaryEntry, NewDbDictionaryEntry};
 use crate::db::schema::dictionary;
 use crate::dictionary::{Dictionary, DictionaryEntry};
-use crate::lang::locale::AppLanguage;
 
-pub struct DbDictionary {
+pub struct DbDictionary{
     conn: SqliteConnection,
-    app_language: AppLanguage
+    lang: String
 }
 
 impl DbDictionary {
-    pub fn new(db_url: String, app_language: AppLanguage) -> DbDictionary {
+    pub fn new(db_url: String, lang: &str) -> DbDictionary {
         DbDictionary {
             conn: SqliteConnection::establish(&db_url)
                 .expect(&format!("Error connecting to database {}", db_url)),
-            app_language
+            lang: String::from(lang)
         }
     }
 
@@ -37,7 +36,7 @@ impl DbDictionary {
     fn get_word_of_today(&self, current_day: NaiveDate) -> Result<Option<DbDictionaryEntry>, Error> {
         match dictionary::dsl::dictionary
             .filter(dictionary::used_at.eq(current_day))
-            .filter(dictionary::language.eq(&self.app_language.to_string()))
+            .filter(dictionary::language.eq(&self.lang))
             .limit(1)
             .get_result::<DbDictionaryEntry>(&self.conn)
             .optional() {
@@ -46,7 +45,7 @@ impl DbDictionary {
                     Some(entry) => Ok(Some(entry)),
                     None => dictionary::dsl::dictionary
                         .filter(dictionary::used_at.is_null())
-                        .filter(dictionary::language.eq(&self.app_language.to_string()))
+                        .filter(dictionary::language.eq(&self.lang))
                         .order(sql::<()>("RANDOM()"))
                         .limit(1)
                         .get_result::<DbDictionaryEntry>(&self.conn)
@@ -88,7 +87,7 @@ impl Dictionary for DbDictionary {
     fn find_word(&self, text: &str) -> Option<DictionaryEntry> {
         let db_result = dictionary::dsl::dictionary
             .filter(dictionary::word.eq(text))
-            .filter(dictionary::language.eq(&self.app_language.to_string()))
+            .filter(dictionary::language.eq(&self.lang))
             .get_result::<DbDictionaryEntry>(&self.conn)
             .optional();
 
@@ -114,7 +113,7 @@ impl Dictionary for DbDictionary {
             None => {
                 let new_word = NewDbDictionaryEntry {
                     word: String::from(&word_entry.word),
-                    language: self.app_language.to_string()
+                    language: String::from(&self.lang)
                 };
 
                 let db_result = diesel::insert_into(dictionary::table)
@@ -139,7 +138,7 @@ impl Dictionary for DbDictionary {
     fn guessed_word(&self, word_entry: DictionaryEntry) {
         match diesel::update(dictionary::dsl::dictionary
             .filter(dictionary::word.eq(word_entry.word)))
-            .filter(dictionary::language.eq(&self.app_language.to_string()))
+            .filter(dictionary::language.eq(&self.lang))
             .set(dictionary::guessed.eq(true))
             .execute(&self.conn) {
                 Ok(_) => {},

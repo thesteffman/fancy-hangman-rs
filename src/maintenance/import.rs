@@ -9,14 +9,14 @@ use uuid::Uuid;
 
 use crate::dictionary::{Dictionary, DictionaryEntry, get_dictionary};
 use crate::db::db_dictionary::DbDictionary;
-use crate::lang::locale::{AppLanguage, replace_unicode};
+use crate::lang::locale::replace_unicode;
 
 static BOOKMARK: Emoji<'_, '_> = Emoji("🔖  ", "");
 static MINIDISC: Emoji<'_, '_> = Emoji("💽  ", "");
 static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", ":-)");
 
-pub fn do_import(source_file: String, app_language: AppLanguage) -> std::io::Result<()> {
-    let dictionary = get_dictionary(app_language);
+pub fn do_import(source_file: String, lang: &str) -> std::io::Result<()> {
+    let dictionary = get_dictionary(lang);
 
     let started = Instant::now();
 
@@ -35,7 +35,7 @@ pub fn do_import(source_file: String, app_language: AppLanguage) -> std::io::Res
     let progress_polish = setup_spinner();
     progress_polish.set_message(format!("Processing {}...", source_file));
 
-    let meta_data = polish(&source_file, app_language)?;
+    let meta_data = polish(&source_file, lang)?;
 
     progress_polish.finish_with_message(format!("Finished processing {}. Importing...", source_file));
 
@@ -51,7 +51,7 @@ pub fn do_import(source_file: String, app_language: AppLanguage) -> std::io::Res
     Ok(())
 }
 
-/// Read raw word list from source_path and polish with matching app_language strategy.
+/// Read raw word list from source_path and polish with matching lang strategy.
 /// The polished list is then written to a temporary file located in the tmp directory of the filesystem.
 ///
 /// See [temp_dir] documentation for more information.
@@ -59,8 +59,8 @@ pub fn do_import(source_file: String, app_language: AppLanguage) -> std::io::Res
 /// # Arguments
 ///
 /// * `src_path` - A string slice that holds the path of the file you want to maintenance on the filesystem
-/// * `app_language` - The language of the imported words. See [AppLanguage]
-fn polish(source_path: &str, app_language: AppLanguage) -> Result<(String, u64), Error> {
+/// * `lang` - Language shortcode of the imported words.
+fn polish(source_path: &str, lang: &str) -> Result<(String, u64), Error> {
     let tmp_file_name = format!("{}/{}.txt", temp_dir().to_str().unwrap(), Uuid::new_v4());
     let out_file: Result<File, Error> = File::create(&tmp_file_name);
 
@@ -72,7 +72,7 @@ fn polish(source_path: &str, app_language: AppLanguage) -> Result<(String, u64),
             let mut counter = 0;
 
             for line_result in buf_reader.lines() {
-                let polished = replace_unicode(line_result.unwrap().to_lowercase().as_str(), app_language);
+                let polished = replace_unicode(line_result.unwrap().to_lowercase().as_str(), lang);
 
                 if polished.len() == 5 {
                     writer.write(polished.as_ref())?;
