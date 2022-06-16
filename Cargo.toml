@@ -8,19 +8,14 @@ homepage = "https://www.tohuwabohu.io/projects/wordle-cli"
 documentation = "https://www.tohuwabohu.io/projects/wordle-cli"
 repository = "https://github.com/tohuwabohu-io/wordle-cli"
 readme = "README.md"
-default-run = "game"
+default-run = "wordle"
 keywords = ["wordle", "game", "cli", "cli-game"]
-exclude = [".gitignore", ".github/"]
+exclude = [".gitignore", ".github/", ".idea/", "migrations/", "res/db/create.sql", "res/db/drop.sql", "*.iml"]
 
 
 [[bin]]
-name = "game"
+name = "wordle"
 path = "src/main.rs"
-
-
-[[bin]]
-name = "import"
-path = "src/bin/import.rs"
 
 [dependencies]
 rand = "0.8.5"
