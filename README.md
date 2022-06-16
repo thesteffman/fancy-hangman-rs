@@ -1,4 +1,5 @@
 # wordle-cli
+![crates.io](https://img.shields.io/crates/v/wordle-cli.svg)
 [![.github/workflows/build.yml][build-badge]][build-url]
 [![.github/workflows/test.yml][test-badge]][test-url]
 
