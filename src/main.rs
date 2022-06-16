@@ -2,7 +2,7 @@ use std::io::stdin;
 use clap::{Parser, Subcommand};
 use console::style;
 
-use wordle_cli::lang::locale::{AppLanguage, get_app_language, parse_app_language, replace_unicode};
+use wordle_cli::lang::locale::replace_unicode;
 use wordle_cli::dictionary::{Dictionary, get_dictionary};
 use wordle_cli::maintenance::import::do_import;
 
@@ -33,31 +33,33 @@ enum Commands {
 fn main() -> std::io::Result<()> {
     let args = Arguments::parse();
 
-    let app_language = match args.language {
-        None => get_app_language(),
-        Some(flag) => parse_app_language(flag.as_str())
+    let lang = match args.language {
+        None => String::from("en"),
+        Some(flag) => flag
     };
+
+    let lang = lang.as_str();
 
     match args.command {
         Some(command) => {
             match command {
                 Commands::Import { source_file, import_language } => {
-                    do_import(source_file, parse_app_language(&import_language))?;
+                    do_import(source_file, import_language.as_str())?;
                 }
             }
         }
         _ => {
-            start_game(app_language);
+            start_game(lang);
         }
     }
 
     Ok(())
 }
 
-fn start_game(app_language: AppLanguage) {
+fn start_game(lang: &str) {
     print_welcome();
 
-    let dictionary = get_dictionary(app_language);
+    let dictionary = get_dictionary(lang);
     let solution_option = dictionary.get_random_word();
 
     match solution_option {
@@ -75,7 +77,7 @@ fn start_game(app_language: AppLanguage) {
 
                 let mut counter = 0;
                 while counter < max_attempts {
-                    let attempt: String = read_input(5);
+                    let attempt: String = read_input(5, lang);
 
                     match dictionary.find_word(&attempt) {
                         Some(_) => {
@@ -109,12 +111,12 @@ fn start_game(app_language: AppLanguage) {
     }
 }
 
-fn read_input(word_len: usize) -> String {
+fn read_input(word_len: usize, lang: &str) -> String {
     let mut input: String = String::new();
 
     loop {
         stdin().read_line(&mut input).unwrap();
-        let polished = replace_unicode(input.to_lowercase().trim(), get_app_language());
+        let polished = replace_unicode(input.to_lowercase().trim(), lang);
 
         if !validate_user_input(&polished, word_len) {
             println!("Invalid input: Your guess must have a size of {} characters. You entered {} characters.", word_len, polished.len());
@@ -181,26 +183,34 @@ _ _ _ _ _
 #[test]
 fn test_validate_user_input() {
     assert!(validate_user_input(
-        replace_unicode("schön", AppLanguage::DE).as_str(), 6
+        replace_unicode("schön", "de").as_str(), 6
     ));
 
     assert!(validate_user_input(
-        replace_unicode("schön", AppLanguage::EN).as_str(), 5
+        replace_unicode("schön", "en").as_str(), 5
     ));
 
     assert!(validate_user_input(
-        replace_unicode("lüge", AppLanguage::DE).as_str(), 5
+        replace_unicode("lüge", "de").as_str(), 5
     ));
 
     assert!(validate_user_input(
-        replace_unicode("lüge", AppLanguage::EN).as_str(), 4
+        replace_unicode("lüge", "en").as_str(), 4
     ));
 
     assert!(validate_user_input(
-        replace_unicode("howdy", AppLanguage::DE).as_str(), 5
+        replace_unicode("howdy", "de").as_str(), 5
     ));
 
     assert!(validate_user_input(
-        replace_unicode("howdy", AppLanguage::EN).as_str(), 5
+        replace_unicode("howdy", "en").as_str(), 5
+    ));
+
+    assert!(validate_user_input(
+        replace_unicode("wölfe", "de").as_str(), 6
+    ));
+
+    assert!(validate_user_input(
+        replace_unicode("wölfe", "en").as_str(), 5
     ));
 }

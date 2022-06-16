@@ -1,5 +1,4 @@
 use crate::db::db_dictionary::DbDictionary;
-use crate::lang::locale::AppLanguage;
 
 use std::env;
 use dotenv::dotenv;
@@ -18,8 +17,8 @@ pub struct DictionaryEntry {
     pub guessed: bool
 }
 
-pub fn get_dictionary(app_language: AppLanguage) -> DbDictionary {
+pub fn get_dictionary(lang: &str) -> DbDictionary {
     dotenv().ok();
     DbDictionary::new(env::var("DATABASE_URL")
-                          .expect("DATABASE_URL must be set"), app_language)
+                          .expect("DATABASE_URL must be set"), lang)
 }
