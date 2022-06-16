@@ -13,18 +13,16 @@ wordle-cli is a wordle inspired word guessing game for the CLI written in rust.
 ## Usage
 Run the game by executing
 `
-cargo run --bin game [language]
+cargo run [language]
 `.
 
-If `language` is not set, it defaults to the locale system settings or `"en"`.
+If `language` is not set, it defaults to `"en"`.
 
 
 Run the import tool by executing
 `
-cargo run --bin import <file_path> [language]
+cargo run --bin import <source-file> <import-language>
 `.
-
-If `language` is not set, it defaults to the locale system settings or `"en"`.
 
 ## Game rules
 The player has to correctly guess a randomly selected word from the dictionary. All words are 5 characters long. By coloring single letters the game tells the player about correct letter positioning.
@@ -35,7 +33,7 @@ The game ends when the player runs out of guesses or when the player guesses the
 
 ## Settings
 The `.env` file contains information about the database location.
-* `DATABASE_URL` indicates that the dictioanry is located in a given db url
+* `DATABASE_URL` indicates that the dictionary is located in a given db url
 
 ## Import
 The import tool can be used to expand the word base. Usage: See Usage above.
@@ -59,11 +57,11 @@ Step 2: Create a diesel migration.
 
 Step 3: Navigate to the res/db folder.
 
-`create.sql` and `drop.sql` should be put into the diesel migration's `up.sql` and `down.sql`.
+`create.sql` and `drop.sql` should be put into the diesel migration's `up.sql` and `down.sql`. Those files are excluded from the crate.
 
 Step 4: Import your dictionary into the database. 
 
-`cargo run --bin import dictionary.txt [language]`
+`cargo run -- import --source-file=dictionary.txt --import-language=en`
 
 Et voilà! Enjoy additional features. A correctly guessed word will be marked as `guessed` in the database and won't show up a second time. The first randomly selected word of the day will re-occur upon starting the game on the same day, until it has been guessed successfully.
 
