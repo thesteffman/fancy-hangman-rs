@@ -1,6 +1,6 @@
 [package]
 name = "wordle-cli"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 license-file = "LICENSE"
 description = "The popular word guessing game as CLI application! Written in Rust."
